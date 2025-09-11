@@ -4,7 +4,7 @@
   const canal = params.get("play");
 
   if (canal) {
-    // Construir URL real del stream
+    // URL real del reproductor en Blogger
     const urlReal = "https://hsports4hd.blogspot.com/2025/09/reproductor.html?play=" + canal;
 
     // Codificar en Base64
@@ -26,7 +26,7 @@
       align-items:center;
     `;
 
-    // Crear iframe del reproductor
+    // Crear iframe del reproductor fullscreen
     const iframe = document.createElement("iframe");
     iframe.src = urlReal;
     iframe.setAttribute("allowfullscreen", "true");
@@ -35,9 +35,11 @@
       width:100%;
       height:100%;
       border:none;
+      margin:0;
+      padding:0;
     `;
 
-    // Botón de cierre flotante
+    // Agregar un botón de cierre opcional
     const closeBtn = document.createElement("button");
     closeBtn.innerHTML = "✖";
     closeBtn.style = `
@@ -55,18 +57,16 @@
     `;
     closeBtn.onclick = () => contenedor.remove();
 
-    // Agregar elementos al contenedor
+    // Insertar elementos
     contenedor.appendChild(iframe);
     contenedor.appendChild(closeBtn);
-
-    // Insertar al DOM
     document.body.style.margin = "0";
     document.body.style.padding = "0";
     document.body.style.height = "100%";
     document.body.style.overflow = "hidden";
     document.body.appendChild(contenedor);
 
-    // Actualizar la URL visible con ?r=base64
+    // Actualizar URL visible como ?r=Base64
     const nuevaURL = window.location.origin + window.location.pathname + "?r=" + base64;
     window.history.replaceState({}, "", nuevaURL);
   }
