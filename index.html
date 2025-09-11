@@ -1,223 +1,88 @@
-<style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: #000;
-    height: 100%;
-    overflow-x: hidden;
-    font-family: Arial, sans-serif;
-  }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reproductor Fullscreen</title>
+  <script src="//cdn.jsdelivr.net/npm/@clappr/player@0.8/dist/clappr.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/@swarmcloud/hls/p2p-engine.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+    }
+    #player {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+    }
+    /* Ajuste de la barra */
+    .media-control[data-media-control] 
+    .media-control-layer[data-controls] 
+    .bar-container[data-seekbar] 
+    .bar-background[data-seekbar] {
+      height: 5px !important;
+    }
+    .media-control[data-media-control] 
+    .media-control-layer[data-controls] 
+    .bar-container[data-seekbar]:hover 
+    .bar-background[data-seekbar] {
+      height: 7px !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="player"></div>
 
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: #000;
-    height: 100%;
-    overflow-x: hidden;
-    font-family: Arial, sans-serif;
-  }
+  <script>
+    // 📌 Lista de URLs de tus streams
+    var canales = {
+      "espn": "https://aw1wcm92zq.fubohd.com:443/espn/mono.m3u8?token=a9d23b13112392cd228dfe0a8db553a2e193eebc-dd-1757567006-1757549006",
+      "espn2": "https://aw1wcm92zq.fubohd.com:443/espn2/mono.m3u8?token=xxxx",
+      "tudn": "https://aw1wcm92zq.fubohd.com:443/tudn/mono.m3u8?token=xxxx",
+      "dsports": "https://aw1wcm92zq.fubohd.com:443/dsports/mono.m3u8?token=xxxx"
+    };
 
-  .main-outer, .content-outer, .content-fauxcolumns, .post-body {
-    margin: 0 !important;
-    padding: 0 !important;
-    max-width: 100% !important;
-    width: 100% !important;
-  }
-
-  /* 🎥 Reproductor ajustado */
-  .video-container {
-    position: relative;
-    width: 100%;
-    height: 40vh; /* ✅ Alto reducido */
-    overflow: hidden;
-    border-radius: 16px;
-    border: 3px solid #000;
-    box-shadow: 0 0 12px rgba(0,0,0,0.3);
-  }
-
-  .video-container iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    display: block;
-  }
-
-  /* ⛶ Botón de pantalla completa */
-  .fullscreen-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    z-index: 9999;
-    background: rgba(0,0,0,0.8);
-    color: #fff;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 13px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-  }
-
-  :fullscreen .fullscreen-btn,
-  :-webkit-full-screen .fullscreen-btn {
-    position: fixed;
-    top: 10px;
-    right: 100px;
-  }
-
-  /* 📱 Responsive ajustes */
-  @media (max-width: 768px) {
-    .video-container {
-      height: 20vh; /* ✅ Se mantiene en móviles */
-      border-radius: 12px;
+    // 📌 Obtener parámetro de la URL (?play=espn)
+    function getParam(name) {
+      let url = new URL(window.location.href);
+      return url.searchParams.get(name);
     }
 
-    .fullscreen-btn {
-      font-size: 12px;
-      padding: 5px 8px;
-      top: 6px;
-      right: 6px;
-    }
-  }
-    
+    var canal = getParam("play"); // ej: ?play=espn
+    var playbackURL = canales[canal] || canales["espn"]; // si no hay param, carga ESPN por defecto
 
-  
-  }
-    
-
-  .chat-wrapper {
-    margin-top: 0;
-    padding: 0;
-    position: relative;
-  }
-
-  .chat-toggle {
-    text-align: right;
-    margin: 5px 10px;
-  }
-
-  .chat-toggle button {
-    background: #000;
-    color: #fff;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  }
-
-  .chat-container {
-    display: block;
-    transition: all 0.3s ease;
-    border-radius: 16px;
-    border: 2px solid #000;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    overflow: hidden;
-  }
-
-  .chat-container iframe {
-    width: 100%;
-    height: 400px;
-    border: none;
-    display: block;
-  }
-
-  @media (max-width: 768px) {
-    .video-container {
-      height: 45vh;
-      border-radius: 12px;
+    var p2pConfig = {
+      live: true,
+      trackerZone: "us",
     }
 
-    .chat-container iframe {
-      height: 300px;
-      border-radius: 12px;
-    }
-
-    .fullscreen-btn {
-      font-size: 13px;
-      padding: 6px 10px;
-    }
-  }
-</style>
-
-<main>
-    <div class="dual-container">
-      <div class="player-container">
-        <div class="video-container">
-    <iframe
-      id="embedIframe"
-      allowfullscreen="true"
-      scrolling="no"
-      allow="autoplay; encrypted-media"
-      frameborder="0"
-      src="https://la14hd.com/vivo/canales.php?stream=espn">
-    </iframe>
-    <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ Pantalla</button>
-  </div>
-
-  <div class="chat-wrapper">
-    <div class="chat-toggle">
-      <button onclick="toggleChat()">❌ Chat</button>
-    </div>
-    <div class="chat-container" id="chatBox">
-      <iframe src="https://www3.cbox.ws/box/?boxid=3548963&boxtag=5AkpV8"></iframe>
-    </div>
-  </div>
-</main>
-
-<script>
-  // ✅ Obtener parámetro desde la URL
-  function getParam(name) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(name) || "";
-  }
-
-  // ✅ Detectar y decodificar el parámetro
-  const rawParam = getParam("embed") || getParam("r");
-  const decodedURL = rawParam ? atob(rawParam) : null;
-
-  // ✅ Asignar al iframe si existe
-  if (decodedURL) {
-    const iframe = document.getElementById("embedIframe");
-    if (iframe) {
-      iframe.src = decodedURL;
-    }
-  }
-
-  // ✅ Mostrar/Ocultar chat
-  function toggleChat() {
-    const chat = document.getElementById("chatBox");
-    chat.style.display = (chat.style.display === "none" || chat.style.display === "") ? "block" : "none";
-  }
-
-  // ✅ Pantalla completa horizontal
-  function toggleFullscreen() {
-    const iframe = document.getElementById("embedIframe");
-    const container = iframe.parentElement;
-
-    if (!document.fullscreenElement) {
-      container.requestFullscreen().then(() => {
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock("landscape").catch(() => {});
-        }
+    P2PEngineHls.tryRegisterServiceWorker(p2pConfig).then(() => {
+      var player = new Clappr.Player({
+        source: playbackURL,
+        parentId: "#player",
+        poster: "",
+        width: "100%",
+        height: "100%",
+        autoPlay: true,
+        plugins: [],
+        mediacontrol: { seekbar: "#D4ED31", buttons: "#FFFFFF" },
       });
-    } else {
-      document.exitFullscreen();
-    }
-  }
+      p2pConfig.hlsjsInstance = player.core.getCurrentPlayback()?._hls;
+      var engine = new P2PEngineHls(p2pConfig);
+    });
+  </script>
 
-  // ✅ Actualizar botón si se sale manualmente
-  document.addEventListener("fullscreenchange", () => {
-    const btn = document.querySelector(".fullscreen-btn");
-    if (!document.fullscreenElement) {
-      btn.textContent = " Pantalla";
-    } else {
-      btn.textContent = " Salir";
-    }
-  });
-</script>
+  <!-- Bloqueador de anuncios -->
+  <script src="https://ads.tiogol.com/block.js?v=1.1"></script>
+</body>
+</html>
+
 <script id='_wauqto'>
   var _wau = _wau || [];
   _wau.push([&quot;small&quot;, &quot;5uk6y9ukln&quot;, &quot;qto&quot;]);
