@@ -1,74 +1,84 @@
-<script type="text/javascript">
-(function() {
-  const params = new URLSearchParams(window.location.search);
-  const canal = params.get("play");
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reproductor Fullscreen</title>
+  <script src="//cdn.jsdelivr.net/npm/@clappr/player@0.8/dist/clappr.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/@swarmcloud/hls/p2p-engine.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+    }
+    #player {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+    }
+    /* Ajuste de la barra */
+    .media-control[data-media-control] 
+    .media-control-layer[data-controls] 
+    .bar-container[data-seekbar] 
+    .bar-background[data-seekbar] {
+      height: 5px !important;
+    }
+    .media-control[data-media-control] 
+    .media-control-layer[data-controls] 
+    .bar-container[data-seekbar]:hover 
+    .bar-background[data-seekbar] {
+      height: 7px !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="player"></div>
 
-  if (canal) {
-    // URL real del reproductor en Blogger
-    const urlReal = "https://hsports4hd.blogspot.com/2025/09/reproductor.html?play=" + canal;
+  <script>
+    // 📌 Lista de URLs de tus streams
+    var canales = {
+      "espn": "https://aw1wcm92zq.fubohd.com:443/espn/mono.m3u8?token=a9d23b13112392cd228dfe0a8db553a2e193eebc-dd-1757567006-1757549006",
+      "espn2": "https://aw1wcm92zq.fubohd.com:443/espn2/mono.m3u8?token=xxxx",
+      "tudn": "https://aw1wcm92zq.fubohd.com:443/tudn/mono.m3u8?token=xxxx",
+      "dsports": "https://aw1wcm92zq.fubohd.com:443/dsports/mono.m3u8?token=xxxx"
+    };
 
-    // Codificar en Base64
-    const base64 = btoa(urlReal);
+    // 📌 Obtener parámetro de la URL (?play=espn)
+    function getParam(name) {
+      let url = new URL(window.location.href);
+      return url.searchParams.get(name);
+    }
 
-    // Crear contenedor flotante fullscreen
-    const contenedor = document.createElement("div");
-    contenedor.id = "player-container";
-    contenedor.style = `
-      position:fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
-      z-index:99999;
-      background:#000;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-    `;
+    var canal = getParam("play"); // ej: ?play=espn
+    var playbackURL = canales[canal] || canales["espn"]; // si no hay param, carga ESPN por defecto
 
-    // Crear iframe del reproductor fullscreen
-    const iframe = document.createElement("iframe");
-    iframe.src = urlReal;
-    iframe.setAttribute("allowfullscreen", "true");
-    iframe.setAttribute("scrolling", "no");
-    iframe.style = `
-      width:100%;
-      height:100%;
-      border:none;
-      margin:0;
-      padding:0;
-    `;
+    var p2pConfig = {
+      live: true,
+      trackerZone: "us",
+    }
 
-    // Agregar un botón de cierre opcional
-    const closeBtn = document.createElement("button");
-    closeBtn.innerHTML = "✖";
-    closeBtn.style = `
-      position:absolute;
-      top:10px;
-      right:15px;
-      z-index:100000;
-      background:rgba(0,0,0,0.6);
-      color:#fff;
-      border:none;
-      font-size:24px;
-      cursor:pointer;
-      padding:5px 10px;
-      border-radius:6px;
-    `;
-    closeBtn.onclick = () => contenedor.remove();
+    P2PEngineHls.tryRegisterServiceWorker(p2pConfig).then(() => {
+      var player = new Clappr.Player({
+        source: playbackURL,
+        parentId: "#player",
+        poster: "",
+        width: "100%",
+        height: "100%",
+        autoPlay: true,
+        plugins: [],
+        mediacontrol: { seekbar: "#D4ED31", buttons: "#FFFFFF" },
+      });
+      p2pConfig.hlsjsInstance = player.core.getCurrentPlayback()?._hls;
+      var engine = new P2PEngineHls(p2pConfig);
+    });
+  </script>
 
-    // Insertar elementos
-    contenedor.appendChild(iframe);
-    contenedor.appendChild(closeBtn);
-    document.body.style.margin = "0";
-    document.body.style.padding = "0";
-    document.body.style.height = "100%";
-    document.body.style.overflow = "hidden";
-    document.body.appendChild(contenedor);
-
-    // Actualizar URL visible como ?r=Base64
-    const nuevaURL = window.location.origin + window.location.pathname + "?r=" + base64;
-    window.history.replaceState({}, "", nuevaURL);
-  }
-})();
-</script>
+  <!-- Bloqueador de anuncios -->
+  <script src="https://ads.tiogol.com/block.js?v=1.1"></script>
+</body>
+</html>
