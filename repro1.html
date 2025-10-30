@@ -1,93 +1,38 @@
 
 
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta content="max-age=200" http-equiv="Cache-Control">
-  <meta content="noindex,nofollow" name="robots">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reproductor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Repro1</title>
   <style>
-    body {
+    html, body {
       margin: 0;
       padding: 0;
-      background-color: #000;
-    }
-    .video-container {
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background-color: #000;
-    }
-    iframe {
+      background: #000;
       width: 100%;
       height: 100%;
+      overflow: hidden;
+    }
+    iframe {
+      width: 100vw;
+      height: 100vh;
       border: none;
+      background: #000;
     }
   </style>
 </head>
 <body>
-  <div class="video-container" id="videoContainer"></div>
+  <iframe id="player" allowfullscreen></iframe>
 
   <script>
-    function getParameterByName(name) {
-      name = name.replace(/[
-
-\[]/, "\
-
-\[").replace(/[\]
-
-]/, "\\]
-
-");
-      const regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
-      const results = regex.exec(location.search);
-      return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-    }
-
-    let embed = getParameterByName('embed') || getParameterByName('r') || false;
-
-    const container = document.getElementById("videoContainer");
-
-    if (embed) {
-      const iframe = document.createElement("iframe");
-      iframe.className = "embed-responsive-item";
-      iframe.setAttribute("allowfullscreen", "");
-      iframe.setAttribute("allow", "autoplay; encrypted-media");
-      iframe.setAttribute("title", "Reproductor 1");
-      iframe.src = embed;
-      container.appendChild(iframe);
+    const get = new URLSearchParams(location.search).get("get");
+    if (get) {
+      document.getElementById("player").src = get;
     } else {
-      const img = document.createElement("img");
-      img.src = "beloo.PNG";
-      img.className = "embed-responsive-item";
-      img.style.width = "100%";
-      container.appendChild(img);
+      document.body.innerHTML = "<h2 style='color:white;text-align:center;'>Canal no disponible</h2>";
     }
-
-    window.onload = function() {
-      const images = document.getElementsByTagName('img');
-      const links = document.getElementsByTagName('a');
-
-      for (let i = 0; i < images.length; i++) {
-        images[i].onclick = function() {
-          AndroidInterface.onImageClick();
-        };
-      }
-
-      for (let i = 0; i < links.length; i++) {
-        links[i].onclick = function() {
-          AndroidInterface.onLinkClick();
-        };
-      }
-
-      AndroidInterface.cargarAnuncioNativo();
-    };
-
-    document.addEventListener('click', function() {
-      Android.manejarClic();
-    });
   </script>
 </body>
 </html>
