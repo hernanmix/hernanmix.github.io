@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Verificador de Stream</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    iframe, img {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+  <div id="contenedor"></div>
+
+  <script>
+    const url = new URLSearchParams(location.search).get("get");
+    const contenedor = document.getElementById("contenedor");
+
+    if (!url) {
+      contenedor.innerHTML = "<h2 style='color:white;text-align:center;'>Canal no disponible</h2>";
+    } else {
+      fetch(url, { method: 'HEAD', mode: 'no-cors' })
+        .then(() => {
+          contenedor.innerHTML = `<iframe src="${url}" allowfullscreen></iframe>`;
+        })
+        .catch(() => {
+          contenedor.innerHTML = `<img src="https://pbs.twimg.com/media/DjY2G6tV4AA5-0p.jpg" alt="No hay señal">`;
+        });
+
+      // Fallback por timeout (por si fetch no responde)
+      setTimeout(() => {
+        if (!contenedor.innerHTML) {
+          contenedor.innerHTML = `<img src="https://pbs.twimg.com/media/DjY2G6tV4AA5-0p.jpg" alt="No hay señal">`;
+        }
+      }, 4000);
+    }
+  </script>
+</body>
+</html>
