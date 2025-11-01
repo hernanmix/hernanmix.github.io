@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Repro1</title>
+  <title>Repro2</title>
   <style>
     html, body {
       margin: 0;
@@ -13,7 +13,7 @@
       height: 100%;
       overflow: hidden;
     }
-    #player, #fallback {
+    #stream, #fallback {
       position: absolute;
       top: 0; left: 0;
       width: 100vw;
@@ -32,28 +32,28 @@
   </style>
 </head>
 <body>
-  <iframe id="player" allowfullscreen></iframe>
+  <iframe id="stream" allowfullscreen></iframe>
 
   <div id="fallback">
     <img src="https://pbs.twimg.com/media/DjY2G6tV4AA5-0p.jpg" alt="No hay señal">
   </div>
 
   <script>
-    const get = new URLSearchParams(location.search).get("get");
-    const iframe = document.getElementById("player");
+    const url = new URLSearchParams(location.search).get("get");
+    const stream = document.getElementById("stream");
     const fallback = document.getElementById("fallback");
 
-    if (get) {
-      iframe.src = get;
+    if (url) {
+      stream.src = url;
 
       // Espera 3 segundos para verificar si el iframe responde
       setTimeout(() => {
         try {
-          const test = iframe.contentWindow.location.href;
-          // Si no lanza error, el iframe cargó
+          const test = stream.contentWindow.location.href;
+          // Si no lanza error, el stream cargó
         } catch (e) {
-          // Si lanza error, el iframe está caído o bloqueado
-          iframe.style.display = "none";
+          // Si lanza error, el stream está caído o bloqueado
+          stream.style.display = "none";
           fallback.style.display = "block";
         }
       }, 3000);
