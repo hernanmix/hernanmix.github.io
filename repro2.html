@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Repro1</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    #player, #fallback {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      border: none;
+    }
+    #fallback {
+      display: none;
+      background: #000;
+    }
+    #fallback img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+  <iframe id="player" allowfullscreen></iframe>
+
+  <div id="fallback">
+    <img src="https://pbs.twimg.com/media/DjY2G6tV4AA5-0p.jpg" alt="No hay señal">
+  </div>
+
+  <script>
+    const get = new URLSearchParams(location.search).get("get");
+    const iframe = document.getElementById("player");
+    const fallback = document.getElementById("fallback");
+
+    if (get) {
+      iframe.src = get;
+
+      // Espera 3 segundos para verificar si el iframe responde
+      setTimeout(() => {
+        try {
+          const test = iframe.contentWindow.location.href;
+          // Si no lanza error, el iframe cargó
+        } catch (e) {
+          // Si lanza error, el iframe está caído o bloqueado
+          iframe.style.display = "none";
+          fallback.style.display = "block";
+        }
+      }, 3000);
+    } else {
+      document.body.innerHTML = "<h2 style='color:white;text-align:center;'>Canal no disponible</h2>";
+    }
+  </script>
+</body>
+</html>
