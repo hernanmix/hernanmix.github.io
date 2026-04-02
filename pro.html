@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,minimal-ui">
+    <meta name="referrer" content="no-referrer">
+    <style type="text/css">
+        html, body {width:100%;height:100%;margin:auto;overflow: hidden;}
+        body {display:flex;}
+        #mse {flex:auto;}
+        video {
+            object-fit: contain; /* modo normal */
+            background: black;
+        }
+    </style>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/xgplayer@3.0.12/dist/index.min.css">
+    <script type="text/javascript">
+        window.addEventListener('resize',function(){
+            document.getElementById('mse').style.height=window.innerHeight+'px';
+        });
+    </script>
+</head>
+<body>
+<div id="mse"></div>
+<script src="//cdn.jsdelivr.net/npm/xgplayer@3.0.13/dist/index.min.js" charset="utf-8"></script>
+<script src="//cdn.jsdelivr.net/npm/xgplayer-hls.js@3.0.13/dist/index.min.js" charset="utf-8"></script>
+<script src="//cdn.jsdelivr.net/npm/@swarmcloud/hls/p2p-engine.min.js"></script>
+<script type="text/javascript">
+    var p2pConfig = {
+        swFile: 'https://hernanmix.github.io/reproductor/sw.js',
+        live: false
+    }
+
+    // 🔹 Lógica del parámetro ?stream=
+    const params = new URLSearchParams(window.location.search);
+    const streamParam = params.get("stream");
+    let finalUrl = "";
+    if (streamParam) {
+        finalUrl = "https://canchatv.online/tvtvhd/proxy3.php?stream=" + streamParam;
+    }
+
+    P2pEngineHls.tryRegisterServiceWorker(p2pConfig).then(() => {
+        var player = new window.Player({
+            id: 'mse',
+            url: finalUrl,
+            autoplay: true,
+            playsinline: true,
+            height: window.innerHeight,
+            width: window.innerWidth,
+            plugins: P2pEngineHls.isMSESupported() ? [window.HlsJsPlugin] : [],
+            hlsJsPlugin: {
+                hlsOpts: {}
+            }
+        });
+
+        // 🔹 Forzar pantalla completa horizontal
+        player.on('fullscreen', () => {
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock("landscape").catch(err => {
+                    console.warn("No se pudo forzar landscape:", err);
+                });
+            }
+        });
+
+        // 🔹 Ajuste visual en fullscreen → llenar pantalla sin bordes negros
+        document.addEventListener("fullscreenchange", () => {
+            const videoEl = document.querySelector("video");
+            if (document.fullscreenElement) {
+                videoEl.style.objectFit = "fill";
+                videoEl.style.width = "100vw";
+                videoEl.style.height = "100vh";
+            } else {
+                videoEl.style.objectFit = "contain";
+                videoEl.style.width = "100%";
+                videoEl.style.height = "auto";
+            }
+        });
+
+        const events = window.Player.Events;
+        [events.READY, events.URL_CHANGE].forEach(event => {
+            player.on(event, () => {
+                if (P2pEngineHls.isMSESupported()) {
+                    p2pConfig.hlsjsInstance = player.getPlugin("HlsJsPlugin").hls;
+                }
+                new P2pEngineHls(p2pConfig)
+            })
+        })
+    })
+</script>
+</body>
+</html>
